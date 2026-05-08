@@ -15,6 +15,7 @@ app.use('/api/orders',    require('./routes/orders'));
 app.use('/api/customers', require('./routes/customers'));
 app.use('/api/discounts', require('./routes/discounts'));
 app.use('/api/settings',  require('./routes/settings'));
+app.use('/api/upload',    require('./routes/upload'));
 
 // Health check
 app.get('/', (req, res) => res.json({ status: 'ADHD API running' }));
