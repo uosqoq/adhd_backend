@@ -12,7 +12,7 @@ router.get('/', adminOnly, async (req, res) => {
   }
 });
 
-// GET /api/customers/me  — own profile
+// GET /api/customers/me  — own profile (must come before /:id)
 router.get('/me', auth, async (req, res) => {
   try {
     const customer = await Customer.findById(req.user.id);
@@ -30,6 +30,32 @@ router.patch('/me', auth, async (req, res) => {
     if (req.body.password) allowed.password = req.body.password;
     const customer = await Customer.findByIdAndUpdate(req.user.id, allowed, { new: true });
     res.json({ id: customer._id, name: customer.name, email: customer.email });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// GET /api/customers/:id  — admin only
+router.get('/:id', adminOnly, async (req, res) => {
+  try {
+    const customer = await Customer.findById(req.params.id);
+    if (!customer) return res.status(404).json({ error: 'Not found' });
+    res.json(customer);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PATCH /api/customers/:id  — admin only (notes)
+router.patch('/:id', adminOnly, async (req, res) => {
+  try {
+    const customer = await Customer.findByIdAndUpdate(
+      req.params.id,
+      { notes: req.body.notes },
+      { new: true }
+    );
+    if (!customer) return res.status(404).json({ error: 'Not found' });
+    res.json(customer);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }

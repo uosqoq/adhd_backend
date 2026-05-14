@@ -1,6 +1,7 @@
 const router    = require('express').Router();
 const multer    = require('multer');
 const cloudinary = require('cloudinary').v2;
+const Media     = require('../models/Media');
 const { adminOnly } = require('../middleware/auth');
 
 cloudinary.config({
@@ -39,9 +40,21 @@ router.post('/', adminOnly, upload.array('images', 8), async (req, res) => {
     if (!req.files || req.files.length === 0)
       return res.status(400).json({ error: 'No files uploaded' });
 
+    const folder = req.query.folder || 'adhd-products';
     const results = await Promise.all(
-      req.files.map(f => uploadToCloudinary(f.buffer, 'adhd-products'))
+      req.files.map(f => uploadToCloudinary(f.buffer, folder))
     );
+
+    // Persist each upload to the Media library
+    await Media.insertMany(results.map((r, i) => ({
+      url:          r.secure_url,
+      publicId:     r.public_id,
+      originalName: req.files[i].originalname,
+      folder,
+      bytes:        r.bytes || 0,
+      width:        r.width || 0,
+      height:       r.height || 0,
+    }))).catch(() => { /* never fail upload if Media insert fails */ });
 
     res.json({
       urls: results.map(r => r.secure_url),

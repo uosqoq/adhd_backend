@@ -16,6 +16,8 @@ app.use('/api/customers', require('./routes/customers'));
 app.use('/api/discounts', require('./routes/discounts'));
 app.use('/api/settings',  require('./routes/settings'));
 app.use('/api/drops',     require('./routes/drops'));
+app.use('/api/categories',require('./routes/categories'));
+app.use('/api/media',     require('./routes/media'));
 app.use('/api/upload',    require('./routes/upload'));
 
 // Health check

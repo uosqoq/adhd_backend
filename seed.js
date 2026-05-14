@@ -27,10 +27,10 @@ const products = [
   await Product.insertMany(products);
   console.log(`Seeded ${products.length} products`);
 
-  const adminExists = await Customer.findOne({ email: 'admin@adhd-brand.com' });
+  const adminExists = await Customer.findOne({ role: 'admin' });
   if (!adminExists) {
-    await Customer.create({ name: 'Admin', email: 'admin@adhd-brand.com', password: 'adhd2026', role: 'admin' });
-    console.log('Admin account created: admin@adhd-brand.com / adhd2026');
+    await Customer.create({ name: 'Admin', email: 'admin@adhd-club.com', password: 'adhd2026', role: 'admin' });
+    console.log('Admin account created: admin@adhd-club.com / adhd2026');
   } else {
     console.log('Admin already exists, skipping');
   }

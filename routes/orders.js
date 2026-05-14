@@ -52,4 +52,33 @@ router.patch('/:id/status', adminOnly, async (req, res) => {
   }
 });
 
+// PATCH /api/orders/:id  — admin only (tracking, carrier, notes, shipping, lineItems)
+router.patch('/:id', adminOnly, async (req, res) => {
+  try {
+    const allowed = (({ tracking, carrier, notes, shipping, lineItems, status }) =>
+      ({ tracking, carrier, notes, shipping, lineItems, status }))(req.body);
+    Object.keys(allowed).forEach(k => allowed[k] === undefined && delete allowed[k]);
+    const order = await Order.findByIdAndUpdate(req.params.id, allowed, { new: true, runValidators: true });
+    if (!order) return res.status(404).json({ error: 'Order not found' });
+    res.json(order);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// POST /api/orders/:id/refund  — admin only
+router.post('/:id/refund', adminOnly, async (req, res) => {
+  try {
+    const order = await Order.findByIdAndUpdate(
+      req.params.id,
+      { status: 'Refunded', refundedAt: new Date(), refundReason: req.body.reason || '' },
+      { new: true }
+    );
+    if (!order) return res.status(404).json({ error: 'Order not found' });
+    res.json(order);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
 module.exports = router;

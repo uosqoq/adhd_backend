@@ -2,9 +2,20 @@ const router  = require('express').Router();
 const Drop    = require('../models/Drop');
 const { adminOnly } = require('../middleware/auth');
 
+// Auto-flip 'upcoming' drops to 'active' once their date has passed.
+// Side-effect runs lazily on each list fetch (no scheduler needed).
+async function autoFlipStatuses() {
+  const now = new Date();
+  await Drop.updateMany(
+    { status: 'upcoming', date: { $ne: null, $lte: now } },
+    { $set: { status: 'active' } }
+  );
+}
+
 // GET /api/drops — public
 router.get('/', async (req, res) => {
   try {
+    await autoFlipStatuses();
     const drops = await Drop.find().sort({ createdAt: -1 });
     res.json(drops);
   } catch (err) {

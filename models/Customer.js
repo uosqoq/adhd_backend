@@ -6,6 +6,7 @@ const customerSchema = new Schema({
   email:    { type: String, required: true, unique: true, lowercase: true },
   password: { type: String, required: true, select: false },
   role:     { type: String, enum: ['customer', 'admin'], default: 'customer' },
+  notes:    { type: String, default: '' },
 }, { timestamps: true });
 
 customerSchema.pre('save', async function () {
