@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const jwt = require('jsonwebtoken');
 const Customer = require('../models/Customer');
+const { auth } = require('../middleware/auth');
 
 const sign = (user) =>
   jwt.sign({ id: user._id, role: user.role, name: user.name, email: user.email },
@@ -47,6 +48,29 @@ router.get('/me', async (req, res) => {
     res.json(payload);
   } catch {
     res.status(401).json({ error: 'Invalid token' });
+  }
+});
+
+// PATCH /api/auth/change-password  (authenticated user changes own password)
+router.patch('/change-password', auth, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword)
+      return res.status(400).json({ error: 'Current and new password are required' });
+    if (newPassword.length < 6)
+      return res.status(400).json({ error: 'New password must be at least 6 characters' });
+
+    const customer = await Customer.findById(req.user.id).select('+password');
+    if (!customer)
+      return res.status(404).json({ error: 'Account not found' });
+    if (!(await customer.comparePassword(currentPassword)))
+      return res.status(401).json({ error: 'Current password is incorrect' });
+
+    customer.password = newPassword;
+    await customer.save();
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
