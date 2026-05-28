@@ -7,6 +7,9 @@ const customerSchema = new Schema({
   password: { type: String, required: true, select: false },
   role:     { type: String, enum: ['customer', 'admin'], default: 'customer' },
   notes:    { type: String, default: '' },
+  totpSecret:        { type: String, select: false },
+  totpEnabled:       { type: Boolean, default: false },
+  totpRecoveryCodes: { type: [String], select: false, default: [] },
 }, { timestamps: true });
 
 customerSchema.pre('save', async function () {
